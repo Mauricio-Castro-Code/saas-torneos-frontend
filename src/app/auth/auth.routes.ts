@@ -4,5 +4,9 @@ export const AUTH_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () => import('./auth-shell/auth-shell').then((m) => m.AuthShell),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'login' },
+      { path: 'login', loadComponent: () => import('./login/login').then((m) => m.Login) },
+    ],
   },
 ];

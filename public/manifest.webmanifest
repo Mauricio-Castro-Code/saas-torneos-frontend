@@ -1,7 +1,9 @@
 {
-  "name": "saas-torneos-frontend",
-  "short_name": "saas-torneos-frontend",
+  "name": "LigaPro",
+  "short_name": "LigaPro",
   "display": "standalone",
+  "theme_color": "#22c55e",
+  "background_color": "#f8fafc",
   "scope": "./",
   "start_url": "./",
   "icons": [

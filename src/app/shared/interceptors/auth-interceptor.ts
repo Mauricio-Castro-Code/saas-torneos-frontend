@@ -1,7 +1,13 @@
 import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
 
-// TODO (Sprint 1): adjuntar `Authorization: Bearer <access>` desde AuthService
-// y manejar 401 (refresh o logout).
+import { AuthService } from '../services/auth';
+
+// TODO: manejar 401 (refresh o logout) cuando el endpoint de refresh esté conectado.
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  return next(req);
+  const token = inject(AuthService).getAccessToken();
+  if (!token) {
+    return next(req);
+  }
+  return next(req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }));
 };
