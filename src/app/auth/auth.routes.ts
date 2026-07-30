@@ -8,6 +8,7 @@ export const AUTH_ROUTES: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'login' },
       { path: 'login', loadComponent: () => import('./login/login').then((m) => m.Login) },
       { path: 'registro', loadComponent: () => import('./register/register').then((m) => m.Register) },
+      { path: 'unirse', loadComponent: () => import('./join/join').then((m) => m.Join) },
     ],
   },
 ];

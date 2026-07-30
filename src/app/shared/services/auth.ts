@@ -63,11 +63,19 @@ export class AuthService {
     });
   }
 
-  registerJugador(username: string, email: string, password: string): Observable<RegistroJugadorResponse> {
+  registerJugador(
+    username: string,
+    email: string,
+    password: string,
+    codigoLiga: string,
+  ): Observable<RegistroJugadorResponse> {
+    // codigo_liga es obligatorio para el backend (RegistroJugadorSerializer) aunque el
+    // formulario de cuenta ya no lo pida: en el wizard de unirse se captura en el paso 1.
     return this.http.post<RegistroJugadorResponse>(`${environment.apiUrl}/auth/registro/jugador/`, {
       username,
       email,
       password,
+      codigo_liga: codigoLiga,
     });
   }
 
