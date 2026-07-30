@@ -1,0 +1,119 @@
+@if (!isAuthenticated() || role() !== 'admin') {
+  <div class="min-h-screen flex items-center justify-center bg-background p-4">
+    <div class="bg-surface border border-outline-variant rounded-xl p-6 text-center space-y-4 max-w-md w-full">
+      <p class="font-body-md text-body-md text-on-surface-variant">
+        Necesitas iniciar sesión como administrador para ver tus ligas.
+      </p>
+      <a
+        routerLink="/auth/login"
+        class="inline-block bg-primary text-on-primary py-3 px-6 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider"
+      >
+        Iniciar sesión
+      </a>
+    </div>
+  </div>
+} @else {
+  <div class="min-h-screen bg-background font-body-md text-on-background pb-24">
+    <header class="sticky top-0 z-10 bg-surface border-b border-outline-variant px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-primary text-headline-md">sports_soccer</span>
+        <h1 class="font-headline-md text-headline-md text-primary">Mis Ligas</h1>
+      </div>
+      <button type="button" (click)="cerrarSesion()" class="text-primary" aria-label="Cerrar sesión">
+        <span class="material-symbols-outlined">logout</span>
+      </button>
+    </header>
+
+    <main class="max-w-md mx-auto px-4 py-6">
+      <section class="mb-8">
+        <h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Bienvenido, Administrador</h2>
+        @if (!cargando()) {
+          <p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+            @if (ligas().length === 0) {
+              Todavía no tienes ligas
+            } @else {
+              Tienes {{ ligas().length }} {{ ligas().length === 1 ? 'liga' : 'ligas' }} bajo tu gestión
+            }
+          </p>
+        }
+      </section>
+
+      <a
+        routerLink="/admin/nueva-liga"
+        class="w-full border-2 border-dashed border-outline-variant rounded-xl p-6 flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-primary-container/10 transition-all mb-4"
+      >
+        <div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-3xl">add</span>
+        </div>
+        <span class="font-title-lg text-title-lg text-primary">Crear Nueva Liga</span>
+        <p class="font-label-md text-label-md text-on-surface-variant">Configura un nuevo torneo o campeonato</p>
+      </a>
+
+      <h3 class="font-title-lg text-title-lg text-on-surface mb-3">Mis Ligas</h3>
+
+      @if (cargando()) {
+        <div class="flex justify-center py-8">
+          <span class="material-symbols-outlined text-primary animate-spin" style="font-size: 32px">progress_activity</span>
+        </div>
+      } @else if (ligas().length === 0) {
+        <p class="font-body-md text-body-md text-on-surface-variant text-center py-8">
+          Aún no tienes ligas. Crea la primera arriba.
+        </p>
+      } @else {
+        <div class="space-y-4">
+          @for (liga of ligas(); track liga.id) {
+            <div class="bg-surface border border-outline-variant rounded-xl p-4 shadow-sm">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-3xl">sports_soccer</span>
+                  </div>
+                  <div>
+                    <h4 class="font-title-lg text-title-lg text-on-surface">{{ liga.nombre }}</h4>
+                    <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+                      Código: {{ liga.codigo }}
+                    </span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <span
+                    class="px-3 py-1 rounded-full text-label-md font-label-md font-bold uppercase tracking-tight h-fit"
+                    [class.bg-primary-container]="liga.activa"
+                    [class.text-on-primary-container]="liga.activa"
+                    [class.bg-surface-container]="!liga.activa"
+                    [class.text-on-surface-variant]="!liga.activa"
+                  >
+                    {{ liga.activa ? 'Activa' : 'Inactiva' }}
+                  </span>
+                  <!-- Sin acciones todavía (editar/desactivar liga): no hay endpoint conectado aquí. -->
+                  <span class="p-1 rounded-full text-on-surface-variant">
+                    <span class="material-symbols-outlined">more_vert</span>
+                  </span>
+                </div>
+              </div>
+              <div class="border-t border-outline-variant pt-3 flex items-center gap-2 text-on-surface-variant">
+                <span class="material-symbols-outlined text-[18px]">info</span>
+                <p class="font-label-md text-label-md">Equipos y jugadores por liga: próximamente</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </main>
+
+    <nav class="fixed bottom-0 inset-x-0 bg-surface border-t border-outline-variant flex items-center justify-around py-2">
+      <a
+        routerLink="/admin"
+        class="flex flex-col items-center gap-1 px-4 py-1 rounded-full bg-primary-container text-on-primary-container"
+      >
+        <span class="material-symbols-outlined">home</span>
+        <span class="font-label-md text-label-md">Inicio</span>
+      </a>
+      <span class="flex flex-col items-center gap-1 px-4 py-1 rounded-full text-on-surface-variant">
+        <span class="material-symbols-outlined">person</span>
+        <span class="font-label-md text-label-md">Perfil</span>
+      </span>
+    </nav>
+  </div>
+}

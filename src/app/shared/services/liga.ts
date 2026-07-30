@@ -29,4 +29,8 @@ export class LigaService {
   crear(nombre: string): Observable<Liga> {
     return this.http.post<Liga>(`${environment.apiUrl}/ligas/`, { nombre });
   }
+
+  listar(): Observable<Liga[]> {
+    return this.http.get<Liga[]>(`${environment.apiUrl}/ligas/`);
+  }
 }
