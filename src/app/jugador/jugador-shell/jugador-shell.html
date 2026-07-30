@@ -14,36 +14,46 @@
 
     <main class="max-w-md mx-auto p-4 space-y-4">
       @if (vista() === 'partidos') {
-        <div class="bg-surface border border-outline-variant rounded-xl p-4">
-          <h2 class="font-headline-md text-headline-md font-bold text-on-surface">{{ jornada.torneo }}</h2>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="font-body-md text-body-md text-on-surface-variant">Jornada {{ jornada.numero }}</span>
-            <span class="bg-primary text-on-primary text-label-md font-label-md font-semibold uppercase tracking-wider px-2 py-0.5 rounded">
-              {{ jornada.estado }}
-            </span>
+        @if (jornadasConPartidos().length === 0) {
+          <p class="font-body-md text-body-md text-on-surface-variant text-center">
+            Todavía no hay partidos programados en tu liga.
+          </p>
+        }
+
+        @for (grupo of jornadasConPartidos(); track grupo.numero) {
+          <div class="bg-surface border border-outline-variant rounded-xl p-4">
+            <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Jornada {{ grupo.numero }}</h2>
           </div>
-        </div>
 
-        <div class="space-y-3">
-          @for (partido of partidos; track partido.local + partido.visitante) {
-            <div class="bg-surface border border-outline-variant rounded-xl p-4 flex items-center gap-4">
-              <div class="text-center">
-                <div class="font-label-md text-label-md text-on-surface-variant">{{ partido.local }}</div>
+          <div class="space-y-3">
+            @for (partido of grupo.partidos; track partido.id) {
+              <div class="bg-surface border border-outline-variant rounded-xl p-4 flex items-center gap-4">
+                <div class="text-center flex-1">
+                  <div class="font-label-md text-label-md text-on-surface-variant">{{ partido.equipo_local_nombre }}</div>
+                </div>
+                <div class="text-center">
+                  @if (partido.jugado) {
+                    <span class="font-headline-md text-headline-md font-bold text-primary">
+                      {{ partido.goles_local }} - {{ partido.goles_visitante }}
+                    </span>
+                  } @else if (partido.horario) {
+                    <span class="font-headline-md text-headline-md font-bold text-primary">
+                      {{ partido.horario | date: 'short' }}
+                    </span>
+                  } @else {
+                    <span class="font-label-md text-label-md text-on-surface-variant">Por jugar</span>
+                  }
+                  @if (partido.cancha) {
+                    <div class="font-label-md text-label-md text-on-surface-variant mt-1">{{ partido.cancha }}</div>
+                  }
+                </div>
+                <div class="text-center flex-1">
+                  <div class="font-label-md text-label-md text-on-surface-variant">{{ partido.equipo_visitante_nombre }}</div>
+                </div>
               </div>
-              <div class="flex-1 text-center">
-                <span class="font-headline-md text-headline-md font-bold text-primary">{{ partido.hora }}</span>
-                <div class="font-label-md text-label-md text-on-surface-variant mt-1">{{ partido.cancha }}</div>
-              </div>
-              <div class="text-center">
-                <div class="font-label-md text-label-md text-on-surface-variant">{{ partido.visitante }}</div>
-              </div>
-            </div>
-          }
-        </div>
-
-        <p class="font-label-md text-label-md text-on-surface-variant text-center">
-          Datos de ejemplo — todavía no existe el endpoint de jornadas/partidos.
-        </p>
+            }
+          </div>
+        }
       }
 
       @if (vista() === 'estadisticas') {
@@ -83,12 +93,19 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-outline-variant">
-                @for (fila of posiciones; track fila.equipo; let i = $index) {
+                @for (fila of posiciones(); track fila.equipo; let i = $index) {
                   <tr class="font-body-md text-body-md text-on-surface">
                     <td class="py-2">{{ i + 1 }}</td>
                     <td class="py-2">{{ fila.equipo }}</td>
                     <td class="py-2 text-right">{{ fila.gf }}</td>
                     <td class="py-2 text-right">{{ fila.gc }}</td>
+                  </tr>
+                }
+                @empty {
+                  <tr>
+                    <td colspan="4" class="py-4 text-center font-body-md text-body-md text-on-surface-variant">
+                      Todavía no hay partidos jugados.
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -118,9 +135,11 @@
           }
         </div>
 
-        <p class="font-label-md text-label-md text-on-surface-variant text-center">
-          Datos de ejemplo — no existe endpoint de posiciones ni de goleo todavía.
-        </p>
+        @if (subTabEstadisticas() === 'goleo') {
+          <p class="font-label-md text-label-md text-on-surface-variant text-center">
+            Datos de ejemplo — la tabla de goleo necesita saber qué jugador anotó cada gol, y eso no existe todavía.
+          </p>
+        }
       }
 
       @if (vista() === 'equipo') {

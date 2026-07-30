@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../shared/services/auth';
 import { Liga, LigaService } from '../../shared/services/liga';
 import { Equipo, EquipoService } from '../../shared/services/equipo';
+import { Jornada, MatchesService, Partido } from '../../shared/services/matches';
 
 // Vista improvisada para probar el flujo Liga -> Equipo -> Jugador end-to-end
 // mientras no existe el mockup definitivo de gestión de equipos. Oculta la
@@ -21,6 +22,7 @@ export class AdminShell {
   private readonly authService = inject(AuthService);
   private readonly ligaService = inject(LigaService);
   private readonly equipoService = inject(EquipoService);
+  private readonly matchesService = inject(MatchesService);
 
   readonly isAuthenticated = this.authService.isAuthenticated;
   readonly role = this.authService.role;
@@ -33,12 +35,24 @@ export class AdminShell {
   private readonly categoriaId = signal<number | null>(null);
   readonly equipos = signal<Equipo[]>([]);
 
+  readonly jornada = signal<Jornada | null>(null);
+  readonly partidos = signal<Partido[]>([]);
+
   readonly ligaForm = this.fb.nonNullable.group({
     nombre: ['', Validators.required],
   });
 
   readonly equipoForm = this.fb.nonNullable.group({
     nombre: ['', Validators.required],
+  });
+
+  readonly jornadaForm = this.fb.nonNullable.group({
+    numero: [1, Validators.required],
+  });
+
+  readonly partidoForm = this.fb.nonNullable.group({
+    equipoLocal: ['', Validators.required],
+    equipoVisitante: ['', Validators.required],
   });
 
   crearLiga(): void {
@@ -105,6 +119,67 @@ export class AdminShell {
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        this.errorMessage.set(this.extractErrorMessage(err));
+      },
+    });
+  }
+
+  crearJornada(): void {
+    const categoriaId = this.categoriaId();
+    if (this.jornadaForm.invalid || categoriaId === null) {
+      return;
+    }
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    const { numero } = this.jornadaForm.getRawValue();
+    this.matchesService.crearJornada(categoriaId, numero).subscribe({
+      next: (jornada) => {
+        this.loading.set(false);
+        this.jornada.set(jornada);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMessage.set(this.extractErrorMessage(err));
+      },
+    });
+  }
+
+  crearPartido(): void {
+    const jornada = this.jornada();
+    if (this.partidoForm.invalid || !jornada) {
+      return;
+    }
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    const { equipoLocal, equipoVisitante } = this.partidoForm.getRawValue();
+    this.matchesService.crearPartido(jornada.id, Number(equipoLocal), Number(equipoVisitante)).subscribe({
+      next: (partido) => {
+        this.loading.set(false);
+        this.partidos.update((actuales) => [...actuales, partido]);
+        this.partidoForm.reset();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMessage.set(this.extractErrorMessage(err));
+      },
+    });
+  }
+
+  guardarResultado(partidoId: number, golesLocalStr: string, golesVisitanteStr: string): void {
+    const golesLocal = Number(golesLocalStr);
+    const golesVisitante = Number(golesVisitanteStr);
+    if (Number.isNaN(golesLocal) || Number.isNaN(golesVisitante)) {
+      return;
+    }
+    this.errorMessage.set(null);
+
+    this.matchesService.capturarResultado(partidoId, golesLocal, golesVisitante).subscribe({
+      next: (actualizado) => {
+        this.partidos.update((actuales) => actuales.map((p) => (p.id === actualizado.id ? actualizado : p)));
+      },
+      error: (err: HttpErrorResponse) => {
         this.errorMessage.set(this.extractErrorMessage(err));
       },
     });

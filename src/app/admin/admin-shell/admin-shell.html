@@ -117,6 +117,110 @@
             <code class="bg-surface-container px-1 rounded">/admin/teams/jugador/</code> en el Django Admin del backend.
           </p>
         </div>
+
+        @if (equipos().length >= 2) {
+          @if (!jornada()) {
+            <div class="bg-surface border border-outline-variant rounded-xl p-6 space-y-4">
+              <h2 class="font-headline-md text-headline-md font-bold text-on-surface">3. Crear jornada</h2>
+              <form [formGroup]="jornadaForm" (ngSubmit)="crearJornada()" class="flex gap-3">
+                <input
+                  type="number"
+                  min="1"
+                  formControlName="numero"
+                  placeholder="Número de jornada"
+                  class="flex-1 px-4 py-3 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 outline-none font-body-md text-body-md"
+                />
+                <button
+                  type="submit"
+                  [disabled]="jornadaForm.invalid || loading()"
+                  class="bg-primary text-on-primary py-3 px-6 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider disabled:opacity-60"
+                >
+                  Crear
+                </button>
+              </form>
+            </div>
+          } @else {
+            <div class="bg-surface border border-outline-variant rounded-xl p-6 space-y-4">
+              <h2 class="font-headline-md text-headline-md font-bold text-on-surface">
+                4. Partidos — Jornada {{ jornada()!.numero }}
+              </h2>
+
+              <form [formGroup]="partidoForm" (ngSubmit)="crearPartido()" class="flex flex-wrap gap-3 items-center">
+                <select
+                  formControlName="equipoLocal"
+                  class="px-3 py-3 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 outline-none font-body-md text-body-md"
+                >
+                  <option value="" disabled selected>Local</option>
+                  @for (equipo of equipos(); track equipo.id) {
+                    <option [value]="equipo.id">{{ equipo.nombre }}</option>
+                  }
+                </select>
+                <span class="font-label-md text-label-md text-on-surface-variant">vs</span>
+                <select
+                  formControlName="equipoVisitante"
+                  class="px-3 py-3 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 outline-none font-body-md text-body-md"
+                >
+                  <option value="" disabled selected>Visitante</option>
+                  @for (equipo of equipos(); track equipo.id) {
+                    <option [value]="equipo.id">{{ equipo.nombre }}</option>
+                  }
+                </select>
+                <button
+                  type="submit"
+                  [disabled]="partidoForm.invalid || loading()"
+                  class="bg-primary text-on-primary py-3 px-6 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider disabled:opacity-60"
+                >
+                  Agregar partido
+                </button>
+              </form>
+
+              @if (partidos().length === 0) {
+                <p class="font-body-md text-body-md text-on-surface-variant">Todavía no hay partidos en esta jornada.</p>
+              } @else {
+                <ul class="divide-y divide-outline-variant">
+                  @for (partido of partidos(); track partido.id) {
+                    <li class="py-3 flex items-center justify-between gap-3 flex-wrap">
+                      <span class="font-body-md text-body-md text-on-surface">
+                        {{ partido.equipo_local_nombre }} vs {{ partido.equipo_visitante_nombre }}
+                      </span>
+                      <div class="flex items-center gap-2">
+                        <input
+                          #golesLocalInput
+                          type="number"
+                          min="0"
+                          [value]="partido.goles_local ?? ''"
+                          class="w-14 px-2 py-1 bg-surface-container border-b-2 border-outline-variant text-center outline-none"
+                        />
+                        <span class="text-on-surface-variant">-</span>
+                        <input
+                          #golesVisitanteInput
+                          type="number"
+                          min="0"
+                          [value]="partido.goles_visitante ?? ''"
+                          class="w-14 px-2 py-1 bg-surface-container border-b-2 border-outline-variant text-center outline-none"
+                        />
+                        <button
+                          type="button"
+                          (click)="guardarResultado(partido.id, golesLocalInput.value, golesVisitanteInput.value)"
+                          class="text-label-md font-label-md font-semibold text-primary uppercase tracking-wider hover:underline"
+                        >
+                          Guardar
+                        </button>
+                        @if (partido.jugado) {
+                          <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+        } @else {
+          <p class="font-label-md text-label-md text-on-surface-variant text-center">
+            Necesitas al menos 2 equipos para crear una jornada.
+          </p>
+        }
       }
     }
   </div>
