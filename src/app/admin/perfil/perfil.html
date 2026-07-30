@@ -1,0 +1,91 @@
+<div class="min-h-screen bg-background font-body-md text-on-background pb-24">
+  <header class="sticky top-0 z-10 bg-surface border-b border-outline-variant px-4 py-4 flex items-center gap-4">
+    <a routerLink="/admin" aria-label="Volver" class="hover:bg-surface-container p-2 rounded-full transition-colors active:scale-95">
+      <span class="material-symbols-outlined text-primary text-2xl">arrow_back</span>
+    </a>
+    <h1 class="font-headline-md text-headline-md text-primary">Perfil</h1>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 py-6 space-y-6">
+    <div class="bg-surface border border-outline-variant rounded-xl p-6 text-center">
+      <div class="relative inline-block mb-4">
+        <div class="w-24 h-24 rounded-full bg-primary-container flex items-center justify-center">
+          <span class="font-headline-lg text-headline-lg font-bold text-on-primary-container">{{ iniciales() }}</span>
+        </div>
+        <button
+          type="button"
+          (click)="editarFoto()"
+          aria-label="Cambiar foto"
+          class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-on-surface text-surface flex items-center justify-center"
+        >
+          <span class="material-symbols-outlined text-[16px]">edit</span>
+        </button>
+      </div>
+
+      <h2 class="font-headline-md text-headline-md font-bold text-on-surface">{{ username() }}</h2>
+      @if (email()) {
+        <p class="font-body-md text-body-md text-on-surface-variant">{{ email() }}</p>
+      }
+
+      <span class="inline-flex items-center gap-1 mt-3 px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md font-semibold uppercase tracking-wider">
+        <span class="material-symbols-outlined text-[16px]">shield</span>
+        {{ role() === 'admin' ? 'Administrador' : role() }}
+      </span>
+
+      @if (notaFoto()) {
+        <p class="font-label-md text-label-md text-on-surface-variant mt-3">{{ notaFoto() }}</p>
+      }
+    </div>
+
+    <div>
+      <h3 class="font-title-lg text-title-lg text-on-surface mb-3">Estadísticas de Gestión</h3>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-surface border border-outline-variant rounded-xl p-4 text-center">
+          <p class="font-headline-md text-headline-md font-bold text-primary">
+            {{ cargando() ? '—' : totalLigas() }}
+          </p>
+          <p class="font-label-md text-label-md text-on-surface-variant">Ligas</p>
+        </div>
+        <div class="bg-surface border border-outline-variant rounded-xl p-4 text-center">
+          <p class="font-headline-md text-headline-md font-bold text-primary">
+            {{ cargando() ? '—' : totalEquipos() }}
+          </p>
+          <p class="font-label-md text-label-md text-on-surface-variant">Equipos</p>
+        </div>
+        <div class="bg-surface border border-outline-variant rounded-xl p-4 text-center">
+          <p class="font-headline-md text-headline-md font-bold text-on-surface-variant">—</p>
+          <p class="font-label-md text-label-md text-on-surface-variant">Jugadores</p>
+        </div>
+      </div>
+      <p class="font-label-md text-label-md text-on-surface-variant mt-2 text-center">
+        Jugadores: sin endpoint de conteo todavía.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="cerrarSesion()"
+      class="w-full border border-error text-error py-3 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider flex items-center justify-center gap-2"
+    >
+      <span class="material-symbols-outlined">logout</span>
+      Cerrar sesión
+    </button>
+  </main>
+
+  <nav class="fixed bottom-0 inset-x-0 bg-surface border-t border-outline-variant flex items-center justify-around py-2">
+    <a
+      routerLink="/admin"
+      class="flex flex-col items-center gap-1 px-4 py-1 rounded-full text-on-surface-variant"
+    >
+      <span class="material-symbols-outlined">home</span>
+      <span class="font-label-md text-label-md">Inicio</span>
+    </a>
+    <a
+      routerLink="/admin/perfil"
+      class="flex flex-col items-center gap-1 px-4 py-1 rounded-full bg-primary-container text-on-primary-container"
+    >
+      <span class="material-symbols-outlined">person</span>
+      <span class="font-label-md text-label-md">Perfil</span>
+    </a>
+  </nav>
+</div>
