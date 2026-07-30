@@ -63,7 +63,7 @@ export class AdminShell {
     this.errorMessage.set(null);
 
     const { nombre } = this.ligaForm.getRawValue();
-    this.ligaService.crear(nombre).subscribe({
+    this.ligaService.crear({ nombre }).subscribe({
       next: (liga) => {
         this.liga.set(liga);
         this.equipoService.crearCategoriaPorDefecto(liga.id).subscribe({

@@ -1,0 +1,182 @@
+<div class="bg-background min-h-screen flex flex-col">
+  <header class="bg-surface sticky top-0 z-10 flex justify-between items-center px-4 md:px-8 h-16 w-full border-b border-outline-variant">
+    <div class="flex items-center gap-4">
+      <a routerLink="/admin" aria-label="Volver" class="hover:bg-surface-container p-2 rounded-full transition-colors active:scale-95">
+        <span class="material-symbols-outlined text-primary text-2xl">arrow_back</span>
+      </a>
+      <h1 class="font-title-lg text-title-lg text-on-surface">Nueva Liga</h1>
+    </div>
+    <div class="hidden md:flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary">sports_soccer</span>
+      <span class="font-headline-md text-headline-md font-black text-primary">LigaPro</span>
+    </div>
+  </header>
+
+  @if (paso() === 'formulario') {
+    <main class="flex-grow flex flex-col items-center px-4 md:px-8 py-8 max-w-2xl mx-auto w-full">
+      <div class="w-full mb-8 rounded-xl bg-primary p-6 text-center text-on-primary">
+        <span class="material-symbols-outlined text-5xl mb-2">emoji_events</span>
+        <h2 class="font-headline-md text-headline-md leading-tight">Configura tu Torneo</h2>
+        <p class="font-body-md text-body-md opacity-90 mt-1">
+          Define el nombre y gestiona la identidad de tu nueva competencia.
+        </p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="crear()" class="w-full flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <label for="nombre" class="font-title-lg text-title-lg text-on-surface">Nombre del torneo</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">emoji_events</span>
+            <input
+              type="text"
+              id="nombre"
+              formControlName="nombre"
+              placeholder="Ej. Torneo Apertura 2024"
+              class="w-full bg-surface-container border-0 border-b-2 border-outline-variant focus:border-primary focus:ring-0 rounded-t-lg pl-12 pr-4 py-4 font-body-md text-body-md text-on-surface outline-none"
+            />
+          </div>
+          <p class="text-label-md font-label-md text-on-surface-variant px-1">
+            Este nombre será visible para todos los equipos y jugadores participantes.
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label for="sede" class="font-title-lg text-title-lg text-on-surface">Sede Principal</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">location_on</span>
+            <input
+              type="text"
+              id="sede"
+              formControlName="sede"
+              placeholder="Link de Google Maps o dirección"
+              class="w-full bg-surface-container border-0 border-b-2 border-outline-variant focus:border-primary focus:ring-0 rounded-t-lg pl-12 pr-4 py-4 font-body-md text-body-md text-on-surface outline-none"
+            />
+          </div>
+          <p class="text-label-md font-label-md text-on-surface-variant px-1">
+            Ubicación central donde se disputarán los encuentros.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-2">
+            <label for="temporada" class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+              Temporada
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">calendar_today</span>
+              <input
+                type="text"
+                id="temporada"
+                [value]="temporadaLabel"
+                readonly
+                class="w-full bg-surface-container border-0 border-b-2 border-outline-variant pl-12 pr-4 py-3 font-body-md text-on-surface-variant opacity-70 cursor-not-allowed rounded-t-lg outline-none"
+              />
+            </div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="cuposMaximos" class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+              Cupos Máximos
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">groups</span>
+              <input
+                type="number"
+                id="cuposMaximos"
+                formControlName="cuposMaximos"
+                min="1"
+                placeholder="Ej. 16"
+                class="w-full bg-surface-container border-0 border-b-2 border-outline-variant focus:border-primary focus:ring-0 rounded-t-lg pl-12 pr-4 py-3 font-body-md text-on-surface outline-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <span class="font-title-lg text-title-lg text-on-surface">Formato de Competencia</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button
+              type="button"
+              (click)="seleccionarFormato('liga')"
+              class="p-4 bg-surface border-2 rounded-xl text-left transition-colors"
+              [class.border-primary]="form.controls.formato.value === 'liga'"
+              [class.border-outline-variant]="form.controls.formato.value !== 'liga'"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-bold" [class.text-primary]="form.controls.formato.value === 'liga'" [class.text-on-surface]="form.controls.formato.value !== 'liga'">
+                  Liga
+                </span>
+                <span class="material-symbols-outlined" [class.text-primary]="form.controls.formato.value === 'liga'" [class.text-outline]="form.controls.formato.value !== 'liga'">
+                  {{ form.controls.formato.value === 'liga' ? 'check_circle' : 'radio_button_unchecked' }}
+                </span>
+              </div>
+              <p class="text-label-md font-label-md text-on-surface-variant">Ida y vuelta. El 1er lugar es campeón.</p>
+            </button>
+            <button
+              type="button"
+              (click)="seleccionarFormato('liguilla')"
+              class="p-4 bg-surface border-2 rounded-xl text-left transition-colors"
+              [class.border-primary]="form.controls.formato.value === 'liguilla'"
+              [class.border-outline-variant]="form.controls.formato.value !== 'liguilla'"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-bold" [class.text-primary]="form.controls.formato.value === 'liguilla'" [class.text-on-surface]="form.controls.formato.value !== 'liguilla'">
+                  Liguilla
+                </span>
+                <span class="material-symbols-outlined" [class.text-primary]="form.controls.formato.value === 'liguilla'" [class.text-outline]="form.controls.formato.value !== 'liguilla'">
+                  {{ form.controls.formato.value === 'liguilla' ? 'check_circle' : 'radio_button_unchecked' }}
+                </span>
+              </div>
+              <p class="text-label-md font-label-md text-on-surface-variant">Una sola vuelta + eliminatorias.</p>
+            </button>
+          </div>
+        </div>
+
+        @if (errorMessage()) {
+          <p role="alert" class="font-label-md text-label-md text-error">{{ errorMessage() }}</p>
+        }
+      </form>
+    </main>
+
+    <footer class="p-4 md:p-8 bg-surface border-t border-outline-variant sticky bottom-0">
+      <div class="max-w-2xl mx-auto w-full">
+        <button
+          type="button"
+          (click)="crear()"
+          [disabled]="form.invalid || loading()"
+          class="w-full bg-primary text-on-primary font-headline-md text-xl py-4 rounded-xl flex items-center justify-center gap-3 shadow-lg active:scale-[0.98] transition-all disabled:opacity-60"
+        >
+          <span class="material-symbols-outlined">add_circle</span>
+          {{ loading() ? 'Creando...' : 'Crear Liga' }}
+        </button>
+      </div>
+    </footer>
+  } @else {
+    <main class="flex-grow flex flex-col items-center justify-center px-4 md:px-8 py-8 max-w-2xl mx-auto w-full text-center gap-6">
+      <span class="material-symbols-outlined text-primary" style="font-size: 64px">check_circle</span>
+      <h2 class="font-headline-md text-headline-md font-bold text-on-surface">¡Liga creada!</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant">
+        {{ ligaCreada()!.nombre }} ya está lista. Comparte este código para que se unan.
+      </p>
+
+      <div class="bg-surface border border-outline-variant rounded-xl p-6 w-full">
+        <p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-1">Código de liga</p>
+        <p class="font-headline-lg text-headline-lg font-extrabold text-primary mb-4">{{ ligaCreada()!.codigo }}</p>
+        <button
+          type="button"
+          (click)="copiarCodigo()"
+          class="inline-flex items-center gap-2 px-4 py-2 border border-primary text-primary font-semibold rounded-lg"
+        >
+          <span class="material-symbols-outlined text-sm">content_copy</span>
+          {{ copiado() ? '¡Copiado!' : 'Copiar código' }}
+        </button>
+      </div>
+
+      <a
+        routerLink="/admin"
+        class="w-full bg-primary text-on-primary font-headline-md text-lg py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
+      >
+        Ir a Mis Ligas
+      </a>
+    </main>
+  }
+</div>
