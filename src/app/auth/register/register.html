@@ -29,89 +29,105 @@
     </button>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
-    <div class="space-y-1">
-      <label for="username" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
-        Usuario
-      </label>
-      <div class="relative flex items-center">
-        <span class="material-symbols-outlined text-on-surface-variant absolute left-4">person</span>
-        <input
-          type="text"
-          id="username"
-          formControlName="username"
-          placeholder="usuario123"
-          autocomplete="username"
-          class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
-        />
-      </div>
+  @if (selectedTab() === 'jugador') {
+    <div class="text-center py-4">
+      <span class="material-symbols-outlined text-primary text-display-lg-mobile">sports_soccer</span>
+      <p class="font-body-md text-body-md text-on-surface-variant my-4">
+        Para registrarte como jugador necesitas el código de liga de tu administrador y elegir tu equipo.
+      </p>
+      <a
+        routerLink="/auth/unirse"
+        class="w-full inline-flex items-center justify-center gap-2 bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+      >
+        Comenzar
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </a>
     </div>
-
-    <div class="space-y-1">
-      <label for="email" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
-        Correo
-      </label>
-      <div class="relative flex items-center">
-        <span class="material-symbols-outlined text-on-surface-variant absolute left-4">mail</span>
-        <input
-          type="email"
-          id="email"
-          formControlName="email"
-          placeholder="nombre@ejemplo.com"
-          autocomplete="email"
-          class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
-        />
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+      <div class="space-y-1">
+        <label for="username" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Usuario
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">person</span>
+          <input
+            type="text"
+            id="username"
+            formControlName="username"
+            placeholder="usuario123"
+            autocomplete="username"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+          />
+        </div>
       </div>
-    </div>
 
-    <div class="space-y-1">
-      <label for="password" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
-        Contraseña
-      </label>
-      <div class="relative flex items-center">
-        <span class="material-symbols-outlined text-on-surface-variant absolute left-4">lock</span>
-        <input
-          type="password"
-          id="password"
-          formControlName="password"
-          autocomplete="new-password"
-          class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
-        />
+      <div class="space-y-1">
+        <label for="email" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Correo
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">mail</span>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            placeholder="nombre@ejemplo.com"
+            autocomplete="email"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+          />
+        </div>
       </div>
-    </div>
 
-    <div class="space-y-1">
-      <label for="confirmarPassword" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
-        Confirmar contraseña
-      </label>
-      <div class="relative flex items-center">
-        <span class="material-symbols-outlined text-on-surface-variant absolute left-4">lock</span>
-        <input
-          type="password"
-          id="confirmarPassword"
-          formControlName="confirmarPassword"
-          autocomplete="new-password"
-          class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
-        />
+      <div class="space-y-1">
+        <label for="password" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Contraseña
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">lock</span>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            autocomplete="new-password"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+          />
+        </div>
       </div>
-      @if (form.errors?.['passwordMismatch'] && form.controls.confirmarPassword.touched) {
-        <p role="alert" class="font-label-md text-label-md text-error">Las contraseñas no coinciden.</p>
+
+      <div class="space-y-1">
+        <label for="confirmarPassword" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Confirmar contraseña
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">lock</span>
+          <input
+            type="password"
+            id="confirmarPassword"
+            formControlName="confirmarPassword"
+            autocomplete="new-password"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+          />
+        </div>
+        @if (form.errors?.['passwordMismatch'] && form.controls.confirmarPassword.touched) {
+          <p role="alert" class="font-label-md text-label-md text-error">Las contraseñas no coinciden.</p>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p role="alert" class="font-label-md text-label-md text-error">{{ errorMessage() }}</p>
       }
-    </div>
 
-    @if (errorMessage()) {
-      <p role="alert" class="font-label-md text-label-md text-error">{{ errorMessage() }}</p>
-    }
-
-    <button
-      type="submit"
-      [disabled]="form.invalid || loading()"
-      class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:hover:scale-100"
-    >
-      {{ loading() ? 'Creando cuenta...' : 'Crear cuenta' }}
-      <span class="material-symbols-outlined">person_add</span>
-    </button>
-  </form>
+      <button
+        type="submit"
+        [disabled]="form.invalid || loading()"
+        class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:hover:scale-100"
+      >
+        {{ loading() ? 'Creando cuenta...' : 'Crear cuenta' }}
+        <span class="material-symbols-outlined">person_add</span>
+      </button>
+    </form>
+  }
 
   <div class="mt-8 pt-8 border-t border-outline-variant text-center">
     <p class="font-body-md text-body-md text-on-surface-variant">

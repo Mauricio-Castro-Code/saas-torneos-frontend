@@ -1,20 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 
-import { JugadorShell } from './jugador-shell';
+import { Join } from './join';
 
-describe('JugadorShell', () => {
-  let component: JugadorShell;
-  let fixture: ComponentFixture<JugadorShell>;
+describe('Join', () => {
+  let component: Join;
+  let fixture: ComponentFixture<Join>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [JugadorShell],
-      providers: [provideHttpClient()],
+      imports: [Join],
+      providers: [provideHttpClient(), provideRouter([])],
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(JugadorShell);
+    fixture = TestBed.createComponent(Join);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

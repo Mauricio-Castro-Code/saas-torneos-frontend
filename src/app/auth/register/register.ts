@@ -28,6 +28,7 @@ export class Register {
   readonly errorMessage = signal<string | null>(null);
   readonly selectedTab = signal<RoleTab>('jugador');
 
+  // Solo para admin: jugador se registra con el wizard de /auth/unirse (código -> equipo -> cuenta -> perfil).
   readonly form = this.fb.nonNullable.group(
     {
       username: ['', Validators.required],
@@ -51,19 +52,14 @@ export class Register {
     this.errorMessage.set(null);
 
     const { username, email, password } = this.form.getRawValue();
-    // confirmarPassword solo se usa para el validador cruzado, no se envía al backend.
 
-    const onSuccess = () => this.autoLoginAndRedirect(username, password);
-    const onError = (err: HttpErrorResponse) => {
-      this.loading.set(false);
-      this.errorMessage.set(this.extractErrorMessage(err));
-    };
-
-    if (this.selectedTab() === 'admin') {
-      this.authService.registerAdmin(username, email, password).subscribe({ next: onSuccess, error: onError });
-    } else {
-      this.authService.registerJugador(username, email, password).subscribe({ next: onSuccess, error: onError });
-    }
+    this.authService.registerAdmin(username, email, password).subscribe({
+      next: () => this.autoLoginAndRedirect(username, password),
+      error: (err: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMessage.set(this.extractErrorMessage(err));
+      },
+    });
   }
 
   private autoLoginAndRedirect(username: string, password: string): void {

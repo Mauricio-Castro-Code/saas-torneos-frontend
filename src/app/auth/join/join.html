@@ -1,0 +1,289 @@
+<div class="bg-surface border border-outline-variant rounded-xl p-6">
+  @if (step() === 'codigo') {
+    <div class="mb-8 text-center">
+      <h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-1">Unirse a una Liga</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant">
+        Ingresa el código que te proporcionó tu administrador
+      </p>
+    </div>
+
+    <form [formGroup]="codigoForm" (ngSubmit)="confirmarCodigo()" class="space-y-6">
+      <div class="space-y-1">
+        <label for="codigo" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Código de acceso
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">confirmation_number</span>
+          <input
+            type="text"
+            id="codigo"
+            formControlName="codigo"
+            placeholder="EJ: LP-8822"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md uppercase"
+          />
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <p role="alert" class="font-label-md text-label-md text-error">{{ errorMessage() }}</p>
+      }
+
+      <button
+        type="submit"
+        [disabled]="codigoForm.invalid || loading()"
+        class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:hover:scale-100"
+      >
+        {{ loading() ? 'Validando...' : 'Unirse' }}
+      </button>
+      <button
+        type="button"
+        (click)="cancelar()"
+        class="w-full bg-surface border border-outline-variant text-on-surface py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider"
+      >
+        Cancelar
+      </button>
+    </form>
+  }
+
+  @if (step() === 'equipo') {
+    <div class="mb-6 text-center">
+      <h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-1">Selecciona tu equipo</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant">
+        Busca y elige el club al que perteneces en {{ liga()?.nombre }}
+      </p>
+    </div>
+
+    <div class="relative flex items-center mb-4">
+      <span class="material-symbols-outlined text-on-surface-variant absolute left-4">search</span>
+      <input
+        type="text"
+        [value]="busqueda()"
+        (input)="buscar($any($event.target).value)"
+        placeholder="Buscar equipo por nombre"
+        class="w-full pl-[48px] pr-4 py-3 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+      />
+    </div>
+
+    <div class="space-y-2 max-h-80 overflow-y-auto mb-6">
+      @for (equipo of equiposFiltrados(); track equipo.id) {
+        <button
+          type="button"
+          (click)="seleccionarEquipo(equipo)"
+          class="w-full flex items-center gap-3 p-3 rounded-lg border transition-colors duration-200 text-left"
+          [class.border-primary]="equipoSeleccionado()?.id === equipo.id"
+          [class.bg-surface-container]="equipoSeleccionado()?.id === equipo.id"
+          [class.border-outline-variant]="equipoSeleccionado()?.id !== equipo.id"
+        >
+          <span
+            class="flex items-center justify-center w-9 h-9 rounded-full text-on-primary font-label-md text-label-md font-bold shrink-0"
+            [ngClass]="equipo.color"
+          >
+            {{ equipo.abrev }}
+          </span>
+          <span class="flex-1 min-w-0">
+            <span class="block font-body-md text-body-md text-on-surface font-semibold truncate">{{ equipo.nombre }}</span>
+            <span class="block font-label-md text-label-md text-on-surface-variant truncate">{{ equipo.subtitulo }}</span>
+          </span>
+          @if (equipoSeleccionado()?.id === equipo.id) {
+            <span class="material-symbols-outlined text-primary">check_circle</span>
+          }
+        </button>
+      }
+    </div>
+
+    <button
+      type="button"
+      (click)="confirmarEquipo()"
+      [disabled]="!equipoSeleccionado()"
+      class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md disabled:opacity-60"
+    >
+      Confirmar Selección
+    </button>
+    <button
+      type="button"
+      (click)="volver()"
+      class="w-full mt-2 py-2 font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant"
+    >
+      Volver
+    </button>
+  }
+
+  @if (step() === 'cuenta') {
+    <div class="mb-8 text-center">
+      <h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-1">Crea tu cuenta</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant">Para unirte a {{ equipoSeleccionado()?.nombre }}</p>
+    </div>
+
+    <form [formGroup]="cuentaForm" (ngSubmit)="confirmarCuenta()" class="space-y-6">
+      <div class="space-y-1">
+        <label for="username" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Usuario
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">person</span>
+          <input
+            type="text"
+            id="username"
+            formControlName="username"
+            placeholder="usuario123"
+            autocomplete="username"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <label for="email" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Correo
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">mail</span>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            placeholder="nombre@ejemplo.com"
+            autocomplete="email"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <label for="password" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Contraseña
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">lock</span>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            autocomplete="new-password"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <label for="confirmarPassword" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Confirmar contraseña
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">lock</span>
+          <input
+            type="password"
+            id="confirmarPassword"
+            formControlName="confirmarPassword"
+            autocomplete="new-password"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+          />
+        </div>
+        @if (cuentaForm.errors?.['passwordMismatch'] && cuentaForm.controls.confirmarPassword.touched) {
+          <p role="alert" class="font-label-md text-label-md text-error">Las contraseñas no coinciden.</p>
+        }
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="cuentaForm.invalid"
+        class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md disabled:opacity-60"
+      >
+        Continuar
+      </button>
+      <button
+        type="button"
+        (click)="volver()"
+        class="w-full py-2 font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant"
+      >
+        Volver
+      </button>
+    </form>
+  }
+
+  @if (step() === 'perfil') {
+    <div class="mb-8 text-center">
+      <h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-1">Completa tu registro</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant">
+        Ingresa tus datos para unirte a
+        <span class="text-primary font-semibold">{{ equipoSeleccionado()?.nombre }}</span>
+      </p>
+    </div>
+
+    <form [formGroup]="perfilForm" (ngSubmit)="registrarse()" class="space-y-6">
+      <div class="space-y-1">
+        <label for="nombreCompleto" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Nombre completo
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">badge</span>
+          <input
+            type="text"
+            id="nombreCompleto"
+            formControlName="nombreCompleto"
+            placeholder="Ej: Juan Pérez"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <label for="dorsal" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+          Número de dorsal
+        </label>
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">tag</span>
+          <input
+            type="text"
+            id="dorsal"
+            formControlName="dorsal"
+            placeholder="#12"
+            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+          />
+        </div>
+      </div>
+
+      <!-- Preview de ficha, solo visual -->
+      <div class="flex items-center gap-3 p-4 bg-surface-container rounded-lg border border-outline-variant">
+        <span class="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-on-primary font-headline-md text-headline-md font-bold shrink-0">
+          {{ perfilForm.controls.dorsal.value || '#' }}
+        </span>
+        <span class="flex-1 min-w-0">
+          <span class="block font-body-md text-body-md text-on-surface font-semibold truncate">
+            {{ perfilForm.controls.nombreCompleto.value || 'Tu Nombre' }}
+          </span>
+          <span class="block font-label-md text-label-md text-on-surface-variant truncate">
+            Previsualización de tu ficha
+          </span>
+        </span>
+      </div>
+
+      <label class="flex items-start gap-2 cursor-pointer">
+        <input type="checkbox" formControlName="aceptaTerminos" class="mt-1" />
+        <span class="font-body-md text-body-md text-on-surface-variant">
+          Acepto los términos de uso y confirmo que puedo ser contactado por
+          <span class="text-primary font-semibold">{{ liga()?.nombre }}</span>
+        </span>
+      </label>
+
+      @if (errorMessage()) {
+        <p role="alert" class="font-label-md text-label-md text-error">{{ errorMessage() }}</p>
+      }
+
+      <button
+        type="submit"
+        [disabled]="perfilForm.invalid || loading()"
+        class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md disabled:opacity-60"
+      >
+        {{ loading() ? 'Creando cuenta...' : 'Registrarme' }}
+      </button>
+      <button
+        type="button"
+        (click)="volver()"
+        class="w-full py-2 font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant"
+      >
+        Volver
+      </button>
+    </form>
+  }
+</div>
