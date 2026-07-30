@@ -80,6 +80,25 @@
       </div>
     </div>
 
+    <div class="space-y-1">
+      <label for="confirmarPassword" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+        Confirmar contraseña
+      </label>
+      <div class="relative flex items-center">
+        <span class="material-symbols-outlined text-on-surface-variant absolute left-4">lock</span>
+        <input
+          type="password"
+          id="confirmarPassword"
+          formControlName="confirmarPassword"
+          autocomplete="new-password"
+          class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+        />
+      </div>
+      @if (form.errors?.['passwordMismatch'] && form.controls.confirmarPassword.touched) {
+        <p role="alert" class="font-label-md text-label-md text-error">Las contraseñas no coinciden.</p>
+      }
+    </div>
+
     @if (selectedTab() === 'jugador') {
       <div class="space-y-1">
         <label for="codigoLiga" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
