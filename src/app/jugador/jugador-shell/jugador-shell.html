@@ -1,127 +1,335 @@
-<div class="min-h-screen flex flex-col items-center justify-center bg-background font-body-md text-on-background p-4">
-  <header class="w-full max-w-md flex items-center justify-center mb-8">
-    <div class="flex items-center gap-1">
-      <span class="material-symbols-outlined text-primary text-headline-lg-mobile">sports_soccer</span>
-      <h1 class="font-headline-lg-mobile text-headline-lg-mobile font-black tracking-tighter text-primary">
-        LigaPro
-      </h1>
-    </div>
-  </header>
+@if (cargandoEquipo()) {
+  <div class="min-h-screen flex items-center justify-center bg-background">
+    <span class="material-symbols-outlined text-primary animate-spin" style="font-size: 32px">progress_activity</span>
+  </div>
+} @else if (miEquipo()) {
+  <div class="min-h-screen bg-background font-body-md text-on-background pb-20">
+    <header class="sticky top-0 z-10 bg-surface border-b border-outline-variant px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-primary">sports_soccer</span>
+        <span class="font-headline-md text-headline-md font-black tracking-tighter text-primary">LigaPro</span>
+      </div>
+      <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+    </header>
 
-  <main class="w-full max-w-md">
-    <div class="bg-surface border border-outline-variant rounded-xl p-6">
-      @if (step() === 'codigo') {
-        <div class="mb-8 text-center">
-          <h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-1">Unirse a una Liga</h2>
-          <p class="font-body-md text-body-md text-on-surface-variant">
-            Ingresa el código que te proporcionó tu administrador
-          </p>
+    <main class="max-w-md mx-auto p-4 space-y-4">
+      @if (vista() === 'partidos') {
+        <div class="bg-surface border border-outline-variant rounded-xl p-4">
+          <h2 class="font-headline-md text-headline-md font-bold text-on-surface">{{ jornada.torneo }}</h2>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="font-body-md text-body-md text-on-surface-variant">Jornada {{ jornada.numero }}</span>
+            <span class="bg-primary text-on-primary text-label-md font-label-md font-semibold uppercase tracking-wider px-2 py-0.5 rounded">
+              {{ jornada.estado }}
+            </span>
+          </div>
         </div>
 
-        <form [formGroup]="codigoForm" (ngSubmit)="confirmarCodigo()" class="space-y-6">
-          <div class="space-y-1">
-            <label for="codigo" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
-              Código de acceso
-            </label>
-            <div class="relative flex items-center">
-              <span class="material-symbols-outlined text-on-surface-variant absolute left-4">confirmation_number</span>
-              <input
-                type="text"
-                id="codigo"
-                formControlName="codigo"
-                placeholder="EJ: LP-8822"
-                class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md uppercase"
-              />
+        <div class="space-y-3">
+          @for (partido of partidos; track partido.local + partido.visitante) {
+            <div class="bg-surface border border-outline-variant rounded-xl p-4 flex items-center gap-4">
+              <div class="text-center">
+                <div class="font-label-md text-label-md text-on-surface-variant">{{ partido.local }}</div>
+              </div>
+              <div class="flex-1 text-center">
+                <span class="font-headline-md text-headline-md font-bold text-primary">{{ partido.hora }}</span>
+                <div class="font-label-md text-label-md text-on-surface-variant mt-1">{{ partido.cancha }}</div>
+              </div>
+              <div class="text-center">
+                <div class="font-label-md text-label-md text-on-surface-variant">{{ partido.visitante }}</div>
+              </div>
             </div>
+          }
+        </div>
+
+        <p class="font-label-md text-label-md text-on-surface-variant text-center">
+          Datos de ejemplo — todavía no existe el endpoint de jornadas/partidos.
+        </p>
+      }
+
+      @if (vista() === 'estadisticas') {
+        <div class="flex p-1 bg-surface-container rounded-xl border border-outline-variant">
+          <button
+            type="button"
+            (click)="cambiarSubTabEstadisticas('posiciones')"
+            class="flex-1 py-2 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider"
+            [class.bg-primary]="subTabEstadisticas() === 'posiciones'"
+            [class.text-on-primary]="subTabEstadisticas() === 'posiciones'"
+            [class.text-on-surface-variant]="subTabEstadisticas() !== 'posiciones'"
+          >
+            Equipos
+          </button>
+          <button
+            type="button"
+            (click)="cambiarSubTabEstadisticas('goleo')"
+            class="flex-1 py-2 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider"
+            [class.bg-primary]="subTabEstadisticas() === 'goleo'"
+            [class.text-on-primary]="subTabEstadisticas() === 'goleo'"
+            [class.text-on-surface-variant]="subTabEstadisticas() !== 'goleo'"
+          >
+            Goleo
+          </button>
+        </div>
+
+        <div class="bg-surface border border-outline-variant rounded-xl p-4">
+          @if (subTabEstadisticas() === 'posiciones') {
+            <h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-3">Tabla de Posiciones</h2>
+            <table class="w-full text-left">
+              <thead>
+                <tr class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+                  <th class="pb-2">#</th>
+                  <th class="pb-2">Equipo</th>
+                  <th class="pb-2 text-right">GF</th>
+                  <th class="pb-2 text-right">GC</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-variant">
+                @for (fila of posiciones; track fila.equipo; let i = $index) {
+                  <tr class="font-body-md text-body-md text-on-surface">
+                    <td class="py-2">{{ i + 1 }}</td>
+                    <td class="py-2">{{ fila.equipo }}</td>
+                    <td class="py-2 text-right">{{ fila.gf }}</td>
+                    <td class="py-2 text-right">{{ fila.gc }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-3">Tabla de Goleo</h2>
+            <table class="w-full text-left">
+              <thead>
+                <tr class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+                  <th class="pb-2">#</th>
+                  <th class="pb-2">Jugador</th>
+                  <th class="pb-2">Equipo</th>
+                  <th class="pb-2 text-right">Goles</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-variant">
+                @for (fila of goleo; track fila.jugador; let i = $index) {
+                  <tr class="font-body-md text-body-md text-on-surface">
+                    <td class="py-2">{{ i + 1 }}</td>
+                    <td class="py-2">{{ fila.jugador }}</td>
+                    <td class="py-2">{{ fila.equipo }}</td>
+                    <td class="py-2 text-right">{{ fila.goles }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+        <p class="font-label-md text-label-md text-on-surface-variant text-center">
+          Datos de ejemplo — no existe endpoint de posiciones ni de goleo todavía.
+        </p>
+      }
+
+      @if (vista() === 'equipo') {
+        <div class="bg-surface border border-outline-variant rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="font-headline-md text-headline-md font-bold text-on-surface">{{ miEquipo()!.nombre }}</h2>
+              <p class="font-label-md text-label-md text-on-surface-variant">Capitán: tú</p>
+            </div>
+            <span class="bg-primary text-on-primary text-label-md font-label-md font-semibold uppercase tracking-wider px-2 py-1 rounded">
+              Liga A
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          (click)="agregarJugador()"
+          class="w-full bg-primary text-on-primary py-3 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md flex items-center justify-center gap-2"
+        >
+          <span class="material-symbols-outlined">person_add</span>
+          Agregar jugador
+        </button>
+        @if (notaAgregarJugador()) {
+          <p class="font-label-md text-label-md text-on-surface-variant text-center">{{ notaAgregarJugador() }}</p>
+        }
+
+        <div class="bg-surface border border-outline-variant rounded-xl p-4">
+          <h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-3">
+            Plantilla ({{ plantilla.length }})
+          </h3>
+          <ul class="divide-y divide-outline-variant">
+            @for (jugador of plantilla; track jugador.nombre) {
+              <li class="py-3 flex items-center justify-between">
+                <span class="font-body-md text-body-md text-on-surface">{{ jugador.nombre }}</span>
+                <span class="font-label-md text-label-md text-on-surface-variant">{{ jugador.posicion }} · #{{ jugador.dorsal }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <p class="font-label-md text-label-md text-on-surface-variant text-center">
+          Plantilla de ejemplo — no existe endpoint que devuelva los jugadores de un equipo todavía.
+        </p>
+      }
+    </main>
+
+    <nav class="fixed bottom-0 inset-x-0 bg-surface border-t border-outline-variant flex items-center justify-around py-2">
+      <button
+        type="button"
+        (click)="cambiarVista('partidos')"
+        class="flex flex-col items-center gap-1 px-4 py-1 rounded-full"
+        [class.bg-primary]="vista() === 'partidos'"
+        [class.text-on-primary]="vista() === 'partidos'"
+        [class.text-on-surface-variant]="vista() !== 'partidos'"
+      >
+        <span class="material-symbols-outlined">sports_soccer</span>
+        <span class="font-label-md text-label-md">Partidos</span>
+      </button>
+      <button
+        type="button"
+        (click)="cambiarVista('estadisticas')"
+        class="flex flex-col items-center gap-1 px-4 py-1 rounded-full"
+        [class.bg-primary]="vista() === 'estadisticas'"
+        [class.text-on-primary]="vista() === 'estadisticas'"
+        [class.text-on-surface-variant]="vista() !== 'estadisticas'"
+      >
+        <span class="material-symbols-outlined">bar_chart</span>
+        <span class="font-label-md text-label-md">Estadísticas</span>
+      </button>
+      <button
+        type="button"
+        (click)="cambiarVista('equipo')"
+        class="flex flex-col items-center gap-1 px-4 py-1 rounded-full"
+        [class.bg-primary]="vista() === 'equipo'"
+        [class.text-on-primary]="vista() === 'equipo'"
+        [class.text-on-surface-variant]="vista() !== 'equipo'"
+      >
+        <span class="material-symbols-outlined">shield</span>
+        <span class="font-label-md text-label-md">Mi Equipo</span>
+      </button>
+    </nav>
+  </div>
+} @else {
+  <div class="min-h-screen flex flex-col items-center justify-center bg-background font-body-md text-on-background p-4">
+    <header class="w-full max-w-md flex items-center justify-center mb-8">
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-primary text-headline-lg-mobile">sports_soccer</span>
+        <h1 class="font-headline-lg-mobile text-headline-lg-mobile font-black tracking-tighter text-primary">
+          LigaPro
+        </h1>
+      </div>
+    </header>
+
+    <main class="w-full max-w-md">
+      <div class="bg-surface border border-outline-variant rounded-xl p-6">
+        @if (step() === 'codigo') {
+          <div class="mb-8 text-center">
+            <h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-1">Unirse a una Liga</h2>
+            <p class="font-body-md text-body-md text-on-surface-variant">
+              Ingresa el código que te proporcionó tu administrador
+            </p>
           </div>
 
-          @if (errorMessage()) {
-            <p role="alert" class="font-label-md text-label-md text-error">{{ errorMessage() }}</p>
-          }
+          <form [formGroup]="codigoForm" (ngSubmit)="confirmarCodigo()" class="space-y-6">
+            <div class="space-y-1">
+              <label for="codigo" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
+                Código de acceso
+              </label>
+              <div class="relative flex items-center">
+                <span class="material-symbols-outlined text-on-surface-variant absolute left-4">confirmation_number</span>
+                <input
+                  type="text"
+                  id="codigo"
+                  formControlName="codigo"
+                  placeholder="EJ: LP-8822"
+                  class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md uppercase"
+                />
+              </div>
+            </div>
+
+            @if (errorMessage()) {
+              <p role="alert" class="font-label-md text-label-md text-error">{{ errorMessage() }}</p>
+            }
+
+            <button
+              type="submit"
+              [disabled]="codigoForm.invalid || loading()"
+              class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md disabled:opacity-60"
+            >
+              {{ loading() ? 'Validando...' : 'Unirse' }}
+            </button>
+          </form>
+        }
+
+        @if (step() === 'equipo') {
+          <div class="mb-6 text-center">
+            <h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-1">Selecciona tu equipo</h2>
+            <p class="font-body-md text-body-md text-on-surface-variant">
+              Busca y elige el club al que perteneces en {{ liga()?.nombre }}
+            </p>
+          </div>
+
+          <div class="relative flex items-center mb-4">
+            <span class="material-symbols-outlined text-on-surface-variant absolute left-4">search</span>
+            <input
+              type="text"
+              [value]="busqueda()"
+              (input)="buscar($any($event.target).value)"
+              placeholder="Buscar equipo por nombre"
+              class="w-full pl-[48px] pr-4 py-3 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
+            />
+          </div>
+
+          <div class="space-y-2 max-h-80 overflow-y-auto mb-6">
+            @for (equipo of equiposFiltrados(); track equipo.id) {
+              <button
+                type="button"
+                (click)="seleccionarEquipo(equipo)"
+                class="w-full flex items-center gap-3 p-3 rounded-lg border transition-colors duration-200 text-left"
+                [class.border-primary]="equipoSeleccionado()?.id === equipo.id"
+                [class.bg-surface-container]="equipoSeleccionado()?.id === equipo.id"
+                [class.border-outline-variant]="equipoSeleccionado()?.id !== equipo.id"
+              >
+                <span
+                  class="flex items-center justify-center w-9 h-9 rounded-full text-on-primary font-label-md text-label-md font-bold shrink-0"
+                  [ngClass]="equipo.color"
+                >
+                  {{ equipo.abrev }}
+                </span>
+                <span class="flex-1 min-w-0">
+                  <span class="block font-body-md text-body-md text-on-surface font-semibold truncate">{{ equipo.nombre }}</span>
+                  <span class="block font-label-md text-label-md text-on-surface-variant truncate">{{ equipo.subtitulo }}</span>
+                </span>
+                @if (equipoSeleccionado()?.id === equipo.id) {
+                  <span class="material-symbols-outlined text-primary">check_circle</span>
+                }
+              </button>
+            }
+          </div>
 
           <button
-            type="submit"
-            [disabled]="codigoForm.invalid || loading()"
+            type="button"
+            (click)="confirmarEquipo()"
+            [disabled]="!equipoSeleccionado()"
             class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md disabled:opacity-60"
           >
-            {{ loading() ? 'Validando...' : 'Unirse' }}
+            Confirmar Selección
           </button>
-        </form>
-      }
+          <button
+            type="button"
+            (click)="volver()"
+            class="w-full mt-2 py-2 font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant"
+          >
+            Volver
+          </button>
+        }
 
-      @if (step() === 'equipo') {
-        <div class="mb-6 text-center">
-          <h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-1">Selecciona tu equipo</h2>
-          <p class="font-body-md text-body-md text-on-surface-variant">
-            Busca y elige el club al que perteneces en {{ liga()?.nombre }}
-          </p>
-        </div>
-
-        <div class="relative flex items-center mb-4">
-          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">search</span>
-          <input
-            type="text"
-            [value]="busqueda()"
-            (input)="buscar($any($event.target).value)"
-            placeholder="Buscar equipo por nombre"
-            class="w-full pl-[48px] pr-4 py-3 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md"
-          />
-        </div>
-
-        <div class="space-y-2 max-h-80 overflow-y-auto mb-6">
-          @for (equipo of equiposFiltrados(); track equipo.id) {
-            <button
-              type="button"
-              (click)="seleccionarEquipo(equipo)"
-              class="w-full flex items-center gap-3 p-3 rounded-lg border transition-colors duration-200 text-left"
-              [class.border-primary]="equipoSeleccionado()?.id === equipo.id"
-              [class.bg-surface-container]="equipoSeleccionado()?.id === equipo.id"
-              [class.border-outline-variant]="equipoSeleccionado()?.id !== equipo.id"
-            >
-              <span
-                class="flex items-center justify-center w-9 h-9 rounded-full text-on-primary font-label-md text-label-md font-bold shrink-0"
-                [ngClass]="equipo.color"
-              >
-                {{ equipo.abrev }}
-              </span>
-              <span class="flex-1 min-w-0">
-                <span class="block font-body-md text-body-md text-on-surface font-semibold truncate">{{ equipo.nombre }}</span>
-                <span class="block font-label-md text-label-md text-on-surface-variant truncate">{{ equipo.subtitulo }}</span>
-              </span>
-              @if (equipoSeleccionado()?.id === equipo.id) {
-                <span class="material-symbols-outlined text-primary">check_circle</span>
-              }
-            </button>
-          }
-        </div>
-
-        <button
-          type="button"
-          (click)="confirmarEquipo()"
-          [disabled]="!equipoSeleccionado()"
-          class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider shadow-md disabled:opacity-60"
-        >
-          Confirmar Selección
-        </button>
-        <button
-          type="button"
-          (click)="volver()"
-          class="w-full mt-2 py-2 font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant"
-        >
-          Volver
-        </button>
-      }
-
-      @if (step() === 'listo') {
-        <div class="text-center py-4">
-          <span class="material-symbols-outlined text-primary" style="font-size: 64px">check_circle</span>
-          <h2 class="font-headline-md text-headline-md font-bold text-on-surface mt-4 mb-1">¡Listo!</h2>
-          <p class="font-body-md text-body-md text-on-surface-variant">
-            Te uniste a <span class="text-primary font-semibold">{{ equipoSeleccionado()?.nombre }}</span>
-            en {{ liga()?.nombre }}
-          </p>
-        </div>
-      }
-    </div>
-  </main>
-</div>
+        @if (step() === 'listo') {
+          <div class="text-center py-4">
+            <span class="material-symbols-outlined text-primary" style="font-size: 64px">check_circle</span>
+            <h2 class="font-headline-md text-headline-md font-bold text-on-surface mt-4 mb-1">¡Listo!</h2>
+            <p class="font-body-md text-body-md text-on-surface-variant">
+              Te uniste a <span class="text-primary font-semibold">{{ equipoSeleccionado()?.nombre }}</span>
+              en {{ liga()?.nombre }}
+            </p>
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+}

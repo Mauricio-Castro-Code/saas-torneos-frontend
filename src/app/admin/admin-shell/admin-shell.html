@@ -1,1 +1,123 @@
-<p>Hello Admin</p>
+<div class="min-h-screen bg-background font-body-md text-on-background p-4">
+  <div class="max-w-2xl mx-auto space-y-6">
+    <header class="flex items-center gap-1">
+      <span class="material-symbols-outlined text-primary text-headline-lg-mobile">sports_soccer</span>
+      <h1 class="font-headline-lg-mobile text-headline-lg-mobile font-black tracking-tighter text-primary">
+        LigaPro Admin
+      </h1>
+    </header>
+
+    <p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">
+      Vista de prueba — flujo Liga → Equipo → Jugador
+    </p>
+
+    @if (!isAuthenticated() || role() !== 'admin') {
+      <div class="bg-surface border border-outline-variant rounded-xl p-6 text-center space-y-4">
+        <p class="font-body-md text-body-md text-on-surface-variant">
+          Necesitas iniciar sesión como administrador para usar esta vista.
+        </p>
+        <a
+          routerLink="/auth/login"
+          class="inline-block bg-primary text-on-primary py-3 px-6 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider"
+        >
+          Iniciar sesión
+        </a>
+      </div>
+    } @else {
+      @if (errorMessage()) {
+        <p role="alert" class="font-label-md text-label-md text-error">{{ errorMessage() }}</p>
+      }
+
+      @if (!liga()) {
+        <div class="bg-surface border border-outline-variant rounded-xl p-6 space-y-4">
+          <h2 class="font-headline-md text-headline-md font-bold text-on-surface">1. Crear liga</h2>
+          <form [formGroup]="ligaForm" (ngSubmit)="crearLiga()" class="flex gap-3">
+            <input
+              type="text"
+              formControlName="nombre"
+              placeholder="Nombre de la liga"
+              class="flex-1 px-4 py-3 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 outline-none font-body-md text-body-md"
+            />
+            <button
+              type="submit"
+              [disabled]="ligaForm.invalid || loading()"
+              class="bg-primary text-on-primary py-3 px-6 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider disabled:opacity-60"
+            >
+              Crear
+            </button>
+          </form>
+        </div>
+      } @else {
+        <div class="bg-surface border border-outline-variant rounded-xl p-6 space-y-3">
+          <h2 class="font-headline-md text-headline-md font-bold text-on-surface">{{ liga()!.nombre }}</h2>
+          <div class="flex items-center gap-3">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Código para compartir:</span>
+            <code class="bg-surface-container px-3 py-1 rounded-lg font-bold text-primary">{{ liga()!.codigo }}</code>
+            <button
+              type="button"
+              (click)="copiarCodigo()"
+              class="text-label-md font-label-md font-semibold text-primary uppercase tracking-wider hover:underline"
+            >
+              {{ copiado() ? '¡Copiado!' : 'Copiar' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-surface border border-outline-variant rounded-xl p-6 space-y-4">
+          <h2 class="font-headline-md text-headline-md font-bold text-on-surface">2. Dar de alta un equipo</h2>
+          <form [formGroup]="equipoForm" (ngSubmit)="crearEquipo()" class="flex gap-3">
+            <input
+              type="text"
+              formControlName="nombre"
+              placeholder="Nombre del equipo"
+              class="flex-1 px-4 py-3 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 outline-none font-body-md text-body-md"
+            />
+            <button
+              type="submit"
+              [disabled]="equipoForm.invalid || loading()"
+              class="bg-primary text-on-primary py-3 px-6 rounded-lg font-label-md text-label-md font-semibold uppercase tracking-wider disabled:opacity-60"
+            >
+              Agregar
+            </button>
+          </form>
+        </div>
+
+        <div class="bg-surface border border-outline-variant rounded-xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Equipos de la liga</h2>
+            <button
+              type="button"
+              (click)="refrescarEquipos()"
+              class="flex items-center gap-1 text-label-md font-label-md font-semibold text-primary uppercase tracking-wider hover:underline"
+            >
+              <span class="material-symbols-outlined text-[18px]">refresh</span>
+              Refrescar
+            </button>
+          </div>
+
+          @if (equipos().length === 0) {
+            <p class="font-body-md text-body-md text-on-surface-variant">Todavía no hay equipos.</p>
+          } @else {
+            <ul class="divide-y divide-outline-variant">
+              @for (equipo of equipos(); track equipo.id) {
+                <li class="py-3 flex items-center justify-between">
+                  <span class="font-body-md text-body-md text-on-surface">{{ equipo.nombre }}</span>
+                  @if (equipo.capitan) {
+                    <span class="font-label-md text-label-md text-on-surface-variant">Capitán: usuario #{{ equipo.capitan }}</span>
+                  } @else {
+                    <span class="font-label-md text-label-md text-on-surface-variant">Sin jugadores todavía</span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+
+          <p class="font-label-md text-label-md text-on-surface-variant">
+            Para ver el roster completo de jugadores por equipo, revisa
+            <code class="bg-surface-container px-1 rounded">/admin/teams/jugador/</code> en el Django Admin del backend.
+          </p>
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -10,6 +10,12 @@ export interface LigaPublica {
   codigo: string;
 }
 
+export interface Liga extends LigaPublica {
+  admin: number;
+  activa: boolean;
+  creada_en: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -18,5 +24,9 @@ export class LigaService {
 
   validarCodigo(codigo: string): Observable<LigaPublica> {
     return this.http.get<LigaPublica>(`${environment.apiUrl}/ligas/validar/${codigo}/`);
+  }
+
+  crear(nombre: string): Observable<Liga> {
+    return this.http.post<Liga>(`${environment.apiUrl}/ligas/`, { nombre });
   }
 }

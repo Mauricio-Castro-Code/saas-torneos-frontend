@@ -6,26 +6,11 @@ import { Router } from '@angular/router';
 
 import { AuthService } from '../../shared/services/auth';
 import { LigaPublica, LigaService } from '../../shared/services/liga';
+import { EquipoPublico, EquipoService } from '../../shared/services/equipo';
 
 type Step = 'codigo' | 'equipo' | 'cuenta' | 'perfil';
 
-interface MockEquipo {
-  id: number;
-  nombre: string;
-  abrev: string;
-  subtitulo: string;
-  color: string;
-}
-
-// TODO: reemplazar por GET real cuando exista el endpoint de equipos por liga (teams app, PLANNING.md #7-9).
-const EQUIPOS_MOCK: MockEquipo[] = [
-  { id: 1, nombre: 'Titanes FC', abrev: 'TF', subtitulo: 'División A · 22 jugadores', color: 'bg-secondary' },
-  { id: 2, nombre: 'Dragones del Norte', abrev: 'DN', subtitulo: 'División A · 18 jugadores', color: 'bg-primary' },
-  { id: 3, nombre: 'Halcones Galácticos', abrev: 'HG', subtitulo: 'División B · 20 jugadores', color: 'bg-tertiary' },
-  { id: 4, nombre: 'Rayo Metropolitano', abrev: 'RM', subtitulo: 'División B · 15 jugadores', color: 'bg-error' },
-  { id: 5, nombre: 'Puños Salvajes', abrev: 'PS', subtitulo: 'División B · 21 jugadores', color: 'bg-secondary' },
-  { id: 6, nombre: 'Atlético Central', abrev: 'AC', subtitulo: 'División A · 22 jugadores', color: 'bg-primary' },
-];
+const COLORES_EQUIPO = ['bg-secondary', 'bg-primary', 'bg-tertiary', 'bg-error'];
 
 function passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
@@ -43,23 +28,24 @@ export class Join {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly ligaService = inject(LigaService);
+  private readonly equipoService = inject(EquipoService);
   private readonly router = inject(Router);
 
   readonly step = signal<Step>('codigo');
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
-  // Paso 1: código de liga (real)
+  // Paso 1: código de liga
   readonly codigoForm = this.fb.nonNullable.group({
     codigo: ['', Validators.required],
   });
   readonly liga = signal<LigaPublica | null>(null);
 
-  // Paso 2: equipo (mock, sin backend todavía)
-  readonly equipos = EQUIPOS_MOCK;
+  // Paso 2: equipo (real, GET /equipos/por_liga/<codigo>/)
+  readonly equipos = signal<EquipoPublico[]>([]);
   readonly busqueda = signal('');
-  readonly equiposFiltrados = signal<MockEquipo[]>(EQUIPOS_MOCK);
-  readonly equipoSeleccionado = signal<MockEquipo | null>(null);
+  readonly equiposFiltrados = signal<EquipoPublico[]>([]);
+  readonly equipoSeleccionado = signal<EquipoPublico | null>(null);
 
   // Paso 3: cuenta
   readonly cuentaForm = this.fb.nonNullable.group(
@@ -72,22 +58,36 @@ export class Join {
     { validators: passwordsMatchValidator },
   );
 
-  // Paso 4: perfil de jugador (nombre + dorsal) — sin backend todavía (no existe modelo Jugador)
+  // Paso 4: perfil de jugador (nombre + dorsal) — solo visual todavía,
+  // el modelo Jugador no tiene esos campos en el backend.
   readonly perfilForm = this.fb.nonNullable.group({
     nombreCompleto: ['', Validators.required],
     dorsal: ['', Validators.required],
     aceptaTerminos: [false, Validators.requiredTrue],
   });
 
+  inicial(nombre: string): string {
+    return nombre
+      .split(' ')
+      .map((palabra) => palabra[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+  }
+
+  colorEquipo(id: number): string {
+    return COLORES_EQUIPO[id % COLORES_EQUIPO.length];
+  }
+
   buscar(termino: string): void {
     this.busqueda.set(termino);
     const q = termino.trim().toLowerCase();
     this.equiposFiltrados.set(
-      q ? this.equipos.filter((e) => e.nombre.toLowerCase().includes(q)) : this.equipos,
+      q ? this.equipos().filter((e) => e.nombre.toLowerCase().includes(q)) : this.equipos(),
     );
   }
 
-  seleccionarEquipo(equipo: MockEquipo): void {
+  seleccionarEquipo(equipo: EquipoPublico): void {
     this.equipoSeleccionado.set(equipo);
   }
 
@@ -98,11 +98,22 @@ export class Join {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    this.ligaService.validarCodigo(this.codigoForm.getRawValue().codigo).subscribe({
+    const codigo = this.codigoForm.getRawValue().codigo;
+    this.ligaService.validarCodigo(codigo).subscribe({
       next: (liga) => {
-        this.loading.set(false);
         this.liga.set(liga);
-        this.step.set('equipo');
+        this.equipoService.porLiga(codigo).subscribe({
+          next: (equipos) => {
+            this.loading.set(false);
+            this.equipos.set(equipos);
+            this.equiposFiltrados.set(equipos);
+            this.step.set('equipo');
+          },
+          error: () => {
+            this.loading.set(false);
+            this.errorMessage.set('No se pudieron cargar los equipos de la liga.');
+          },
+        });
       },
       error: () => {
         this.loading.set(false);
@@ -135,7 +146,8 @@ export class Join {
   }
 
   registrarse(): void {
-    if (this.perfilForm.invalid) {
+    const equipo = this.equipoSeleccionado();
+    if (this.perfilForm.invalid || !equipo) {
       return;
     }
 
@@ -145,12 +157,21 @@ export class Join {
     const { username, email, password } = this.cuentaForm.getRawValue();
     const codigoLiga = this.liga()!.codigo;
 
-    this.authService.registerJugador(username, email, password, codigoLiga).subscribe({
+    this.authService.registerJugador(username, email, password).subscribe({
       next: () => {
         this.authService.login(username, password).subscribe({
           next: () => {
-            this.loading.set(false);
-            this.router.navigate(['/jugador']);
+            this.equipoService.unirse(codigoLiga, equipo.id).subscribe({
+              next: () => {
+                this.loading.set(false);
+                this.router.navigate(['/jugador']);
+              },
+              error: (err: HttpErrorResponse) => {
+                this.loading.set(false);
+                // La cuenta ya se creó y el login funcionó; solo falló unirse al equipo.
+                this.errorMessage.set(this.extractErrorMessage(err));
+              },
+            });
           },
           error: () => {
             this.loading.set(false);
@@ -160,12 +181,14 @@ export class Join {
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        const body = err.error;
-        const messages = body && typeof body === 'object' ? Object.values(body).flat() : [];
-        this.errorMessage.set(
-          messages.length > 0 ? messages.join(' ') : 'No se pudo completar el registro. Intenta de nuevo.',
-        );
+        this.errorMessage.set(this.extractErrorMessage(err));
       },
     });
+  }
+
+  private extractErrorMessage(err: HttpErrorResponse): string {
+    const body = err.error;
+    const messages = body && typeof body === 'object' ? Object.values(body).flat() : [];
+    return messages.length > 0 ? messages.join(' ') : 'No se pudo completar el registro. Intenta de nuevo.';
   }
 }

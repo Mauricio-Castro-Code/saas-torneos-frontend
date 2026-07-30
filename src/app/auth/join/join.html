@@ -76,13 +76,15 @@
         >
           <span
             class="flex items-center justify-center w-9 h-9 rounded-full text-on-primary font-label-md text-label-md font-bold shrink-0"
-            [ngClass]="equipo.color"
+            [ngClass]="colorEquipo(equipo.id)"
           >
-            {{ equipo.abrev }}
+            {{ inicial(equipo.nombre) }}
           </span>
           <span class="flex-1 min-w-0">
             <span class="block font-body-md text-body-md text-on-surface font-semibold truncate">{{ equipo.nombre }}</span>
-            <span class="block font-label-md text-label-md text-on-surface-variant truncate">{{ equipo.subtitulo }}</span>
+            <span class="block font-label-md text-label-md text-on-surface-variant truncate">
+              {{ equipo.capitan ? 'Ya tiene capitán' : 'Sin jugadores todavía' }}
+            </span>
           </span>
           @if (equipoSeleccionado()?.id === equipo.id) {
             <span class="material-symbols-outlined text-primary">check_circle</span>
