@@ -25,8 +25,7 @@ interface RegistroAdminResponse {
 interface RegistroJugadorResponse {
   id: number;
   username: string;
-  role: Role;
-  liga: { id: number; nombre: string; codigo: string };
+  email: string;
 }
 
 // Estado en memoria (no localStorage) para minimizar exposición del token ante XSS.
@@ -64,17 +63,11 @@ export class AuthService {
     });
   }
 
-  registerJugador(
-    username: string,
-    email: string,
-    password: string,
-    codigoLiga: string,
-  ): Observable<RegistroJugadorResponse> {
+  registerJugador(username: string, email: string, password: string): Observable<RegistroJugadorResponse> {
     return this.http.post<RegistroJugadorResponse>(`${environment.apiUrl}/auth/registro/jugador/`, {
       username,
       email,
       password,
-      codigo_liga: codigoLiga,
     });
   }
 

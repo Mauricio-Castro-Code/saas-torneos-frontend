@@ -80,24 +80,6 @@
       </div>
     </div>
 
-    @if (selectedTab() === 'jugador') {
-      <div class="space-y-1">
-        <label for="codigoLiga" class="font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
-          Código de liga
-        </label>
-        <div class="relative flex items-center">
-          <span class="material-symbols-outlined text-on-surface-variant absolute left-4">confirmation_number</span>
-          <input
-            type="text"
-            id="codigoLiga"
-            formControlName="codigoLiga"
-            placeholder="PUE-7A3F"
-            class="w-full pl-[48px] pr-4 py-4 bg-surface-container border-b-2 border-outline-variant focus:border-primary focus:ring-0 transition-colors duration-200 outline-none font-body-md text-body-md uppercase"
-          />
-        </div>
-      </div>
-    }
-
     @if (errorMessage()) {
       <p role="alert" class="font-label-md text-label-md text-error">{{ errorMessage() }}</p>
     }
