@@ -1,11 +1,17 @@
 import { Component, inject, signal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../shared/services/auth';
 
 type RoleTab = 'jugador' | 'admin';
+
+function passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
+  const password = group.get('password')?.value;
+  const confirmarPassword = group.get('confirmarPassword')?.value;
+  return password === confirmarPassword ? null : { passwordMismatch: true };
+}
 
 @Component({
   selector: 'app-register',
@@ -22,11 +28,15 @@ export class Register {
   readonly errorMessage = signal<string | null>(null);
   readonly selectedTab = signal<RoleTab>('jugador');
 
-  readonly form = this.fb.nonNullable.group({
-    username: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', Validators.required],
-  });
+  readonly form = this.fb.nonNullable.group(
+    {
+      username: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required],
+      confirmarPassword: ['', Validators.required],
+    },
+    { validators: passwordsMatchValidator },
+  );
 
   selectTab(tab: RoleTab): void {
     this.selectedTab.set(tab);
@@ -41,6 +51,7 @@ export class Register {
     this.errorMessage.set(null);
 
     const { username, email, password } = this.form.getRawValue();
+    // confirmarPassword solo se usa para el validador cruzado, no se envía al backend.
 
     const onSuccess = () => this.autoLoginAndRedirect(username, password);
     const onError = (err: HttpErrorResponse) => {
