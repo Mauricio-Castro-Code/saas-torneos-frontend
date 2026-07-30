@@ -16,6 +16,19 @@ interface JwtClaims {
   role: Role;
 }
 
+interface RegistroAdminResponse {
+  id: number;
+  username: string;
+  email: string;
+}
+
+interface RegistroJugadorResponse {
+  id: number;
+  username: string;
+  role: Role;
+  liga: { id: number; nombre: string; codigo: string };
+}
+
 // Estado en memoria (no localStorage) para minimizar exposición del token ante XSS.
 @Injectable({
   providedIn: 'root',
@@ -41,6 +54,28 @@ export class AuthService {
           this.claims.set(this.decodeClaims(response.access));
         }),
       );
+  }
+
+  registerAdmin(username: string, email: string, password: string): Observable<RegistroAdminResponse> {
+    return this.http.post<RegistroAdminResponse>(`${environment.apiUrl}/auth/registro/admin/`, {
+      username,
+      email,
+      password,
+    });
+  }
+
+  registerJugador(
+    username: string,
+    email: string,
+    password: string,
+    codigoLiga: string,
+  ): Observable<RegistroJugadorResponse> {
+    return this.http.post<RegistroJugadorResponse>(`${environment.apiUrl}/auth/registro/jugador/`, {
+      username,
+      email,
+      password,
+      codigo_liga: codigoLiga,
+    });
   }
 
   logout(): void {
