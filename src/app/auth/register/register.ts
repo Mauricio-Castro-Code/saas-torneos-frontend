@@ -26,18 +26,10 @@ export class Register {
     username: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
-    codigoLiga: ['', Validators.required],
   });
 
   selectTab(tab: RoleTab): void {
     this.selectedTab.set(tab);
-    const codigoLigaControl = this.form.controls.codigoLiga;
-    if (tab === 'admin') {
-      codigoLigaControl.clearValidators();
-    } else {
-      codigoLigaControl.setValidators(Validators.required);
-    }
-    codigoLigaControl.updateValueAndValidity();
   }
 
   submit(): void {
@@ -48,7 +40,7 @@ export class Register {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    const { username, email, password, codigoLiga } = this.form.getRawValue();
+    const { username, email, password } = this.form.getRawValue();
 
     const onSuccess = () => this.autoLoginAndRedirect(username, password);
     const onError = (err: HttpErrorResponse) => {
@@ -59,9 +51,7 @@ export class Register {
     if (this.selectedTab() === 'admin') {
       this.authService.registerAdmin(username, email, password).subscribe({ next: onSuccess, error: onError });
     } else {
-      this.authService
-        .registerJugador(username, email, password, codigoLiga)
-        .subscribe({ next: onSuccess, error: onError });
+      this.authService.registerJugador(username, email, password).subscribe({ next: onSuccess, error: onError });
     }
   }
 
