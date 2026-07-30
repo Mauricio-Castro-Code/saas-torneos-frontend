@@ -67,6 +67,7 @@
   --font-display-lg: 'Montserrat', sans-serif;
   --font-display-lg-mobile: 'Montserrat', sans-serif;
   --font-score-display: 'Montserrat', sans-serif;
+  --font-title-lg: 'Montserrat', sans-serif;
 
   /* Font sizes (con line-height; letter-spacing/weight se aplican como utilidades aparte) */
   --text-body-md: 16px;
@@ -87,6 +88,8 @@
   --text-display-lg-mobile--line-height: 40px;
   --text-score-display: 64px;
   --text-score-display--line-height: 64px;
+  --text-title-lg: 22px;
+  --text-title-lg--line-height: 28px;
 }
 
 /* Boilerplate recomendado por Google para Material Symbols variable font */

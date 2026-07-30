@@ -4,7 +4,8 @@
     <p class="font-body-md text-body-md text-on-surface-variant">Ingresa tus credenciales para continuar</p>
   </div>
 
-  <!-- Solo visual: el backend usa un único endpoint de login, el rol lo determina el JWT -->
+  <!-- El backend usa un único endpoint de login para todos los roles; el rol
+       real viene del JWT y se valida contra este tab después del login (ver login.ts). -->
   <div class="flex p-1 bg-surface-container rounded-xl mb-6 border border-outline-variant">
     <button
       type="button"

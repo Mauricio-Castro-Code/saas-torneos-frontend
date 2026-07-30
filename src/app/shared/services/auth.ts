@@ -13,6 +13,7 @@ interface LoginResponse {
 
 interface JwtClaims {
   username: string;
+  email: string;
   role: Role;
 }
 
@@ -41,6 +42,7 @@ export class AuthService {
 
   readonly isAuthenticated = computed(() => this.accessToken() !== null);
   readonly username = computed(() => this.claims()?.username ?? null);
+  readonly email = computed(() => this.claims()?.email ?? null);
   readonly role = computed(() => this.claims()?.role ?? null);
 
   login(username: string, password: string): Observable<LoginResponse> {

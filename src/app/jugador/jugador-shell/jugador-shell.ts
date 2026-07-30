@@ -1,9 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { DatePipe, NgClass } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
 import { EquipoCapitan, EquipoService } from '../../shared/services/equipo';
 import { LigaPublica, LigaService } from '../../shared/services/liga';
+import { Jornada, MatchesService, Partido } from '../../shared/services/matches';
 
 type Step = 'codigo' | 'equipo' | 'listo';
 type Vista = 'partidos' | 'estadisticas' | 'equipo';
@@ -25,47 +26,6 @@ const EQUIPOS_MOCK: MockEquipo[] = [
   { id: 2, nombre: 'Dragones del Norte', abrev: 'DN', subtitulo: 'División A · 18 jugadores', color: 'bg-primary' },
   { id: 3, nombre: 'Halcones Galácticos', abrev: 'HG', subtitulo: 'División B · 20 jugadores', color: 'bg-tertiary' },
   { id: 4, nombre: 'Rayo Metropolitano', abrev: 'RM', subtitulo: 'División B · 15 jugadores', color: 'bg-error' },
-];
-
-interface PartidoMock {
-  local: string;
-  visitante: string;
-  golesLocal?: number;
-  golesVisitante?: number;
-  hora: string;
-  cancha: string;
-  jugado: boolean;
-}
-
-// Mock: la app `matches` ya tiene los modelos Jornada/Partido en el backend,
-// pero todavía no tiene views/urls (sin endpoints). En cuanto existan, esto
-// se reemplaza por un GET real a /jornadas/ y /partidos/.
-const JORNADA_MOCK = {
-  torneo: 'Torneo Apertura 2024',
-  numero: 1,
-  estado: 'PUBLICADO',
-};
-
-const PARTIDOS_MOCK: PartidoMock[] = [
-  { local: 'Crystal', visitante: 'Mero Puerto', hora: '8:00', cancha: 'Cancha CEUNI', jugado: false },
-  { local: 'Rep Congo', visitante: 'BUAP', hora: '9:00', cancha: 'Cancha 3 Alpha', jugado: false },
-  { local: 'Realzaeestra', visitante: 'Impresa', hora: '10:00', cancha: 'Cancha 2 Alpha', jugado: false },
-];
-
-interface PosicionMock {
-  equipo: string;
-  gf: number;
-  gc: number;
-}
-
-// Mock: no existe endpoint de tabla de posiciones (se calcularía a partir de
-// resultados de Partido, que tampoco tiene endpoint todavía).
-const POSICIONES_MOCK: PosicionMock[] = [
-  { equipo: 'Galgos FC', gf: 32, gc: 12 },
-  { equipo: 'Lobos Árticos', gf: 28, gc: 14 },
-  { equipo: 'Tigres de Bengala', gf: 25, gc: 18 },
-  { equipo: 'Rayos FC', gf: 22, gc: 15 },
-  { equipo: 'Halcones Dorados', gf: 20, gc: 19 },
 ];
 
 interface GoleadorMock {
@@ -101,7 +61,7 @@ const PLANTILLA_MOCK: JugadorPlantillaMock[] = [
 
 @Component({
   selector: 'app-jugador-shell',
-  imports: [ReactiveFormsModule, NgClass],
+  imports: [ReactiveFormsModule, NgClass, DatePipe],
   templateUrl: './jugador-shell.html',
   styleUrl: './jugador-shell.scss',
 })
@@ -109,6 +69,7 @@ export class JugadorShell implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly ligaService = inject(LigaService);
   private readonly equipoService = inject(EquipoService);
+  private readonly matchesService = inject(MatchesService);
 
   // --- Estado real: ¿el usuario ya es capitán de un equipo? ---
   // GET /equipos/mi_equipo/ solo responde 200 para capitanes. Si el jugador
@@ -121,9 +82,51 @@ export class JugadorShell implements OnInit {
   readonly subTabEstadisticas = signal<SubTabEstadisticas>('posiciones');
   readonly notaAgregarJugador = signal<string | null>(null);
 
-  readonly jornada = JORNADA_MOCK;
-  readonly partidos = PARTIDOS_MOCK;
-  readonly posiciones = POSICIONES_MOCK;
+  // Reales: GET /jornadas/ y /partidos/ ya están escopados por el backend a la
+  // liga del equipo del jugador autenticado.
+  readonly jornadas = signal<Jornada[]>([]);
+  readonly partidosReales = signal<Partido[]>([]);
+
+  readonly jornadasConPartidos = computed(() => {
+    const numeroPorJornadaId = new Map(this.jornadas().map((j) => [j.id, j.numero]));
+    const grupos = new Map<number, Partido[]>();
+    for (const partido of this.partidosReales()) {
+      const lista = grupos.get(partido.jornada) ?? [];
+      lista.push(partido);
+      grupos.set(partido.jornada, lista);
+    }
+    return [...grupos.entries()]
+      .map(([jornadaId, partidos]) => ({ numero: numeroPorJornadaId.get(jornadaId) ?? jornadaId, partidos }))
+      .sort((a, b) => a.numero - b.numero);
+  });
+
+  readonly posiciones = computed(() => {
+    const tabla = new Map<string, { equipo: string; gf: number; gc: number }>();
+    for (const partido of this.partidosReales()) {
+      if (!partido.jugado) {
+        continue;
+      }
+      const local = tabla.get(partido.equipo_local_nombre) ?? {
+        equipo: partido.equipo_local_nombre,
+        gf: 0,
+        gc: 0,
+      };
+      local.gf += partido.goles_local!;
+      local.gc += partido.goles_visitante!;
+      tabla.set(partido.equipo_local_nombre, local);
+
+      const visitante = tabla.get(partido.equipo_visitante_nombre) ?? {
+        equipo: partido.equipo_visitante_nombre,
+        gf: 0,
+        gc: 0,
+      };
+      visitante.gf += partido.goles_visitante!;
+      visitante.gc += partido.goles_local!;
+      tabla.set(partido.equipo_visitante_nombre, visitante);
+    }
+    return [...tabla.values()].sort((a, b) => b.gf - b.gc - (a.gf - a.gc));
+  });
+
   readonly goleo = GOLEO_MOCK;
   readonly plantilla = PLANTILLA_MOCK;
 
@@ -147,6 +150,8 @@ export class JugadorShell implements OnInit {
       next: (equipo) => {
         this.miEquipo.set(equipo);
         this.cargandoEquipo.set(false);
+        this.matchesService.listarJornadas().subscribe({ next: (j) => this.jornadas.set(j) });
+        this.matchesService.listarPartidos().subscribe({ next: (p) => this.partidosReales.set(p) });
       },
       error: () => {
         // No es capitán de ningún equipo (o no tiene equipo todavía): cae al wizard de unirse.

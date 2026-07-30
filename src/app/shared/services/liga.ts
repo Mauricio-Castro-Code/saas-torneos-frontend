@@ -10,10 +10,22 @@ export interface LigaPublica {
   codigo: string;
 }
 
+export type FormatoLiga = 'liga' | 'liguilla';
+
 export interface Liga extends LigaPublica {
   admin: number;
   activa: boolean;
   creada_en: string;
+  sede: string;
+  formato: FormatoLiga;
+  cupos_maximos: number | null;
+}
+
+export interface CrearLigaPayload {
+  nombre: string;
+  sede?: string;
+  formato?: FormatoLiga;
+  cuposMaximos?: number | null;
 }
 
 @Injectable({
@@ -26,7 +38,16 @@ export class LigaService {
     return this.http.get<LigaPublica>(`${environment.apiUrl}/ligas/validar/${codigo}/`);
   }
 
-  crear(nombre: string): Observable<Liga> {
-    return this.http.post<Liga>(`${environment.apiUrl}/ligas/`, { nombre });
+  crear(payload: CrearLigaPayload): Observable<Liga> {
+    return this.http.post<Liga>(`${environment.apiUrl}/ligas/`, {
+      nombre: payload.nombre,
+      sede: payload.sede,
+      formato: payload.formato,
+      cupos_maximos: payload.cuposMaximos,
+    });
+  }
+
+  listar(): Observable<Liga[]> {
+    return this.http.get<Liga[]>(`${environment.apiUrl}/ligas/`);
   }
 }
