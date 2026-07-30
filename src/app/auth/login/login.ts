@@ -4,8 +4,11 @@ import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../shared/services/auth';
 
-// El toggle Jugador/Administrador es solo visual: el backend usa un único
-// endpoint de login para ambos roles y el rol real viene del JWT, no de este selector.
+// El backend usa un único endpoint de login para todos los roles; el rol real
+// viene del JWT. El toggle Jugador/Administrador filtra en el cliente después
+// del login: si el rol del JWT no corresponde al tab elegido, se trata como
+// credenciales inválidas (con logout inmediato) en vez de dejar entrar a
+// un jugador por el tab de administrador o viceversa.
 type RoleTab = 'jugador' | 'admin';
 
 @Component({
@@ -49,7 +52,23 @@ export class Login {
     this.authService.login(username, password).subscribe({
       next: () => {
         this.loading.set(false);
-        this.router.navigate([`/${this.authService.role()}`]);
+        const rol = this.authService.role();
+        // El tab "jugador" también cubre a un capitán (mismo tipo de cuenta,
+        // el rol de capitán no tiene tab propio en el login).
+        const coincideConTab =
+          this.selectedTab() === 'admin' ? rol === 'admin' : rol === 'jugador' || rol === 'capitan';
+
+        if (!coincideConTab) {
+          this.authService.logout();
+          this.errorMessage.set(
+            this.selectedTab() === 'admin'
+              ? 'No existe una cuenta de administrador con esas credenciales.'
+              : 'No existe una cuenta de jugador con esas credenciales.',
+          );
+          return;
+        }
+
+        this.router.navigate([`/${rol}`]);
       },
       error: () => {
         this.loading.set(false);
